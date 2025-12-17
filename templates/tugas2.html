@@ -1,0 +1,247 @@
+{% extends "base.html" %}
+
+{% block title %}Tugas 2 - KNN Digit Recognition{% endblock %}
+
+{% block content %}
+<div class="container content-section">
+    <h1 class="section-title">Pengenalan Angka Tulisan Tangan dengan K-Nearest Neighbors (KNN)</h1>
+    
+    <!-- Section Deskripsi -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">Tentang Implementasi</div>
+                <div class="card-body">
+                    <p>Implementasi algoritma K-Nearest Neighbors (KNN) untuk klasifikasi angka tulisan tangan menggunakan dataset load_digits
+                        dari Scikit-learn. Dataset berisi 1.797 gambar angka 0-9 berukuran 8x8 piksel dalam skala abu-abu.</p>
+                    <p>Implementasi ini berdasarkan dari sebuah jurnal ilmiah yang berjudul <strong>KNN-Based Handwritten Digit Classification with Accuracy 
+                        Analysis and Visualization (Maulana, et al. 2025)</strong> dari JURNAL ILMIAH SISTEM INFORMASI (JUSI)</p>
+                    <p><strong>Parameter Model:</strong></p>
+                    <ul>
+                        <li>Algoritma: K-Nearest Neighbors (KNN)</li>
+                        <li>Nilai k: 3</li>
+                        <li>Rasio pembagian data: 80% training, 20% testing</li>
+                        <li>Random state: 42</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tab Navigation -->
+    <ul class="nav nav-tabs mb-4" id="myTab" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link {% if active_tab == 'evaluate' or not active_tab %}active{% endif %}" 
+                    id="evaluate-tab" 
+                    data-bs-toggle="tab" 
+                    data-bs-target="#evaluate" 
+                    type="button">Evaluasi Model</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link {% if active_tab == 'predict' %}active{% endif %}" 
+                    id="predict-tab" 
+                    data-bs-toggle="tab" 
+                    data-bs-target="#predict" 
+                    type="button">Prediksi Gambar</button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="myTabContent">
+        <!-- Tab Evaluasi Model -->
+        <div class="tab-pane fade {% if active_tab == 'evaluate' or not active_tab %}show active{% endif %}" 
+             id="evaluate" 
+             role="tabpanel">
+            <div class="row">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">Evaluasi Model pada Dataset Test</div>
+                        <div class="card-body">
+                            <form method="POST">
+                                <input type="hidden" name="action" value="evaluate">
+                                <button type="submit" class="btn btn-primary">Jalankan Evaluasi</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {% if evaluated %}
+            <!-- Akurasi -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">Hasil Akurasi</div>
+                        <div class="card-body text-center">
+                            <h2 class="display-4 text-primary">{{ "%.2f"|format(accuracy) }}%</h2>
+                            <p class="text-muted">Akurasi klasifikasi pada dataset test</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Classification Report -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">Classification Report</div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-bordered result-table">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Digit</th>
+                                            <th>Precision</th>
+                                            <th>Recall</th>
+                                            <th>F1-Score</th>
+                                            <th>Support</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for i in range(10) %}
+                                        <tr>
+                                            <td><strong>{{ i }}</strong></td>
+                                            <td>{{ "%.4f"|format(report[i|string]['precision']) }}</td>
+                                            <td>{{ "%.4f"|format(report[i|string]['recall']) }}</td>
+                                            <td>{{ "%.4f"|format(report[i|string]['f1-score']) }}</td>
+                                            <td>{{ report[i|string]['support'] }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                    <tfoot class="table-secondary">
+                                        <tr>
+                                            <td><strong>Accuracy</strong></td>
+                                            <td colspan="3" class="text-center">{{ "%.4f"|format(report['accuracy']) }}</td>
+                                            <td>{{ report['macro avg']['support'] }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Macro Avg</strong></td>
+                                            <td>{{ "%.4f"|format(report['macro avg']['precision']) }}</td>
+                                            <td>{{ "%.4f"|format(report['macro avg']['recall']) }}</td>
+                                            <td>{{ "%.4f"|format(report['macro avg']['f1-score']) }}</td>
+                                            <td>{{ report['macro avg']['support'] }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Weighted Avg</strong></td>
+                                            <td>{{ "%.4f"|format(report['weighted avg']['precision']) }}</td>
+                                            <td>{{ "%.4f"|format(report['weighted avg']['recall']) }}</td>
+                                            <td>{{ "%.4f"|format(report['weighted avg']['f1-score']) }}</td>
+                                            <td>{{ report['weighted avg']['support'] }}</td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Visualisasi Prediksi -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">Contoh Hasil Prediksi pada Data Test</div>
+                        <div class="card-body text-center">
+                            <img src="data:image/png;base64,{{ visualization }}" class="img-fluid" alt="Visualization">
+                            <p class="text-muted mt-2">Menampilkan 5 sampel dari data test dengan label asli dan hasil prediksi</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Confusion Matrix -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">Confusion Matrix</div>
+                        <div class="card-body text-center">
+                            <img src="data:image/png;base64,{{ confusion_matrix }}" class="img-fluid" alt="Confusion Matrix">
+                            <p class="text-muted mt-2">Matriks konfusi menunjukkan distribusi prediksi benar dan salah untuk setiap digit</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Tab Prediksi Gambar -->
+        <div class="tab-pane fade {% if active_tab == 'predict' %}show active{% endif %}" 
+             id="predict" 
+             role="tabpanel">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header">Upload Gambar Angka</div>
+                        <div class="card-body">
+                            <form method="POST" enctype="multipart/form-data">
+                                <input type="hidden" name="action" value="predict">
+                                <div class="mb-3">
+                                    <label for="image" class="form-label">Pilih Gambar</label>
+                                    <input type="file" class="form-control" id="image" name="image" accept="image/*" required>
+                                    <div class="form-text">Upload gambar angka tulisan tangan (0-9). Gambar akan diubah ke format 8x8 piksel.</div>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Prediksi</button>
+                            </form>
+                        </div>
+                    </div>
+
+                    {% if predicted and image_path %}
+                    <div class="card mt-4">
+                        <div class="card-header">Gambar Original</div>
+                        <div class="card-body text-center">
+                            <div class="image-container">
+                                <img src="{{ url_for('static', filename=image_path) }}" alt="Input" class="image-preview">
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="col-md-6">
+                    {% if predicted %}
+                    <div class="card">
+                        <div class="card-header">Hasil Prediksi</div>
+                        <div class="card-body text-center">
+                            <h1 class="display-1 text-primary">{{ prediction }}</h1>
+                            <p class="text-muted">Digit yang diprediksi</p>
+                        </div>
+                    </div>
+
+                    <div class="card mt-4">
+                        <div class="card-header">Gambar Setelah Preprocessing (8x8)</div>
+                        <div class="card-body text-center">
+                            <img src="data:image/png;base64,{{ processed_image }}" class="img-fluid" alt="Processed">
+                            <p class="text-muted mt-2 small">Gambar telah di-crop, di-resize, dan dinormalisasi untuk prediksi</p>
+                        </div>
+                    </div>
+
+                    <div class="card mt-4">
+                        <div class="card-header">Confidence Score</div>
+                        <div class="card-body">
+                            <table class="table table-sm">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Digit</th>
+                                        <th>Probability</th>
+                                        <th style="width: 40%;">Bar</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for i in range(10) %}
+                                    <tr {% if i == prediction %}class="table-primary"{% endif %}>
+                                        <td><strong>{{ i }}</strong></td>
+                                        <td>{{ "%.4f"|format(probabilities[i]) }}</td>
+                                        <td>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

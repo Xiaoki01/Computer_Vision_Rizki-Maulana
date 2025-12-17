@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+
+{% block title %}Tugas 1 - GLCM{% endblock %}
+
+{% block content %}
+<div class="container content-section">
+    <h1 class="section-title">Ekstraksi Fitur GLCM</h1>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">Upload Gambar</div>
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label for="image" class="form-label">Pilih Gambar</label>
+                            <input type="file" class="form-control" id="image" name="image" accept="image/*" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="degree" class="form-label">Pilih Derajat</label>
+                            <select class="form-select" id="degree" name="degree">
+                                <option value="0" {% if degree == 0 %}selected{% endif %}>0°</option>
+                                <option value="45" {% if degree == 45 %}selected{% endif %}>45°</option>
+                                <option value="90" {% if degree == 90 %}selected{% endif %}>90°</option>
+                                <option value="135" {% if degree == 135 %}selected{% endif %}>135°</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Proses</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            {% if image_path %}
+            <div class="card">
+                <div class="card-header">Gambar Input</div>
+                <div class="card-body text-center">
+                    <div class="image-container">
+                        <img src="{{ url_for('static', filename=image_path) }}" alt="Input" class="image-preview">
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if result %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">Hasil Ekstraksi Fitur ({{ degree }}°)</div>
+                <div class="card-body">
+                    <table class="table table-bordered result-table">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Fitur</th>
+                                <th>Nilai</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Contrast</td>
+                                <td>{{ "%.4f"|format(result.contrast) }}</td>
+                            </tr>
+                            <tr>
+                                <td>Energy</td>
+                                <td>{{ "%.4f"|format(result.energy) }}</td>
+                            </tr>
+                            <tr>
+                                <td>Homogeneity</td>
+                                <td>{{ "%.4f"|format(result.homogeneity) }}</td>
+                            </tr>
+                            <tr>
+                                <td>Correlation</td>
+                                <td>{{ "%.4f"|format(result.correlation) }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

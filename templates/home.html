@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Computer Vision{% endblock %}
+
+{% block content %}
+<section class="content-section mt-5">
+    <div class="container">
+
+        <!-- === PROFIL MAHASISWA === -->
+        <div class="card mb-5 shadow home-card border-0 fade-in">
+            <div class="card-body">
+                <div class="row align-items-center">
+
+                    <div class="col-md-4 text-center mb-3">
+                        <img src="{{ url_for('static', filename='img/profile.jpg') }}"
+                             class="img-fluid rounded-4 shadow"
+                             style="max-width: 60%;">
+                    </div>
+
+                    <div class="col-md-8">
+                        <h3 class="section-title mb-3">Profil Mahasiswa</h3>
+
+                        <table class="table table-borderless profile-table">
+                            <tr><td><strong>Nama</strong></td><td>: Rizki Maulana Zulyadaini</td></tr>
+                            <tr><td><strong>NIM</strong></td><td>: 2311016210027</td></tr>
+                            <tr><td><strong>Program Studi</strong></td><td>: Ilmu Komputer</td></tr>
+                            <tr><td><strong>Universitas</strong></td><td>: Universitas Lambung Mangkurat</td></tr>
+                            <tr><td><strong>Semester</strong></td><td>: 5</td></tr>
+                            <tr><td><strong>Email</strong></td><td>: rizky.achmad0101@gmail.com</td></tr>
+                        </table>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- === TENTANG WEBSITE === -->
+        <div class="card mb-5 shadow home-card border-0 fade-in">
+            <div class="card-body">
+                <h3 class="section-title mb-3">Tentang Website</h3>
+                <p>
+                    Website ini dibuat sebagai media pembelajaran dan dokumentasi tugas-tugas
+                    mata kuliah <strong>Computer Vision</strong>.
+                </p>
+                <p>
+                    Di dalamnya terdapat hasil implementasi algoritma pengolahan citra digital,
+                    ekstraksi fitur, klasifikasi, serta machine learning berbasis citra.
+                </p>
+            </div>
+        </div>
+
+        <!-- === DAFTAR TUGAS === -->
+        <h3 class="section-title text-center mb-4 fade-in">Daftar Tugas</h3>
+
+        <div class="row justify-content-center">
+
+            <!-- TUGAS 1 -->
+            <div class="col-md-6 col-lg-3 mb-4 fade-in">
+                <div class="card home-card shadow h-100">
+                    <div class="card-header text-center fw-bold">
+                        Tugas 1
+                    </div>
+                    <div class="card-body text-center d-flex flex-column">
+                        <h5>Ekstraksi Fitur GLCM</h5>
+                        <p class="flex-grow-1">
+                            Implementasi Gray Level Co-occurrence Matrix untuk analisis tekstur citra.
+                        </p>
+                        <a href="/tugas1" class="btn btn-primary">Lihat Detail</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TUGAS 2 -->
+            <div class="col-md-6 col-lg-3 mb-4 fade-in">
+                <div class="card home-card shadow h-100">
+                    <div class="card-header text-center fw-bold">
+                        Tugas 2
+                    </div>
+                    <div class="card-body text-center d-flex flex-column">
+                        <h5>Klasifikasi Digit</h5>
+                        <p class="flex-grow-1">
+                            Klasifikasi angka menggunakan metode KNN dan evaluasi akurasi.
+                        </p>
+                        <a href="/tugas2" class="btn btn-primary">Lihat Detail</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TUGAS 3 -->
+            <div class="col-md-6 col-lg-3 mb-4 fade-in">
+                <div class="card home-card shadow h-100">
+                    <div class="card-header text-center fw-bold">
+                        Tugas 3
+                    </div>
+                    <div class="card-body text-center d-flex flex-column">
+                        <h5>Decision Tree (ID3)</h5>
+                        <p class="flex-grow-1">
+                            Implementasi algoritma Decision Tree untuk prediksi bermain golf.
+                        </p>
+                        <a href="/tugas3" class="btn btn-primary">Lihat Detail</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TUGAS 4 -->
+            <div class="col-md-6 col-lg-3 mb-4 fade-in">
+                <div class="card home-card shadow h-100">
+                    <div class="card-header text-center fw-bold">
+                        Tugas 4
+                    </div>
+                    <div class="card-body text-center d-flex flex-column">
+                        <h5>Naive Bayes</h5>
+                        <p class="flex-grow-1">
+                            Klasifikasi probabilistik untuk prediksi kelayakan kredit.
+                        </p>
+                        <a href="/tugas4" class="btn btn-primary">Lihat Detail</a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+
+{% block title %}Tugas 3 - Decision Tree{% endblock %}
+
+{% block content %}
+<section class="content-section mt-5">
+    <div class="container">
+        <h1 class="text-center section-title">Decision Tree - Play Golf Dataset</h1>
+        <p class="text-center text-muted mb-5">Implementasi algoritma ID3 untuk membangun Decision Tree dan memprediksi keputusan bermain golf berdasarkan kondisi cuaca</p>
+
+        <!-- Dataset Section -->
+        <div class="card mb-4 shadow border-0">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="bi bi-table"></i> Dataset Play Golf</h4>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    {{ dataset|safe }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Entropy & Information Gain Section -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card shadow border-0 h-100">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">Entropy Awal</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="text-center">
+                            <h2 class="display-4 text-success">{{ "%.4f"|format(initial_entropy) }}</h2>
+                            <p class="text-muted">Entropy dari atribut target (PlayGolf)</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card shadow border-0 h-100">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">Information Gain</h5>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Atribut</th>
+                                    <th class="text-end">Information Gain</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for feature, gain in information_gains.items() %}
+                                <tr>
+                                    <td><strong>{{ feature }}</strong></td>
+                                    <td class="text-end">
+                                        <span class="badge bg-info">{{ "%.4f"|format(gain) }}</span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        <p class="text-muted mt-2 small">
+                            <strong>Atribut terbaik:</strong> 
+                            {{ information_gains|dictsort(by='value', reverse=true)|first|first }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Decision Tree Structure -->
+        <div class="card mb-4 shadow border-0">
+            <div class="card-header bg-warning text-dark">
+                <h4 class="mb-0">Struktur Decision Tree (ID3)</h4>
+            </div>
+            <div class="card-body">
+                <pre class="bg-light p-3 rounded border" style="max-height: 400px; overflow-y: auto;">{{ decision_tree }}</pre>
+            </div>
+        </div>
+
+        <!-- Tree Visualization -->
+        <div class="card mb-4 shadow border-0">
+            <div class="card-header bg-secondary text-white">
+                <h4 class="mb-0">Visualisasi Decision Tree</h4>
+            </div>
+            <div class="card-body text-center">
+                <img src="data:image/png;base64,{{ tree_visualization }}" 
+                     class="img-fluid rounded shadow" 
+                     alt="Decision Tree Visualization"
+                     style="max-width: 100%; height: auto;">
+            </div>
+        </div>
+
+        <!-- Prediction Form -->
+        <div class="card shadow border-0">
+            <div class="card-header bg-dark text-white">
+                <h4 class="mb-0">Prediksi Play Golf</h4>
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-4">Masukkan kondisi cuaca untuk memprediksi apakah cocok untuk bermain golf:</p>
+
+                <form method="POST">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="outlook" class="form-label"><strong>Outlook</strong></label>
+                            <select class="form-select" id="outlook" name="outlook" required>
+                                <option value="">-- Pilih Outlook --</option>
+                                <option value="Sunny">Sunny</option>
+                                <option value="Overcast">Overcast</option>
+                                <option value="Rainy">Rainy</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="temperature" class="form-label"><strong>Temperature</strong></label>
+                            <select class="form-select" id="temperature" name="temperature" required>
+                                <option value="">-- Pilih Temperature --</option>
+                                <option value="Hot">Hot</option>
+                                <option value="Mild">Mild</option>
+                                <option value="Cool">Cool</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="humidity" class="form-label"><strong>Humidity</strong></label>
+                            <select class="form-select" id="humidity" name="humidity" required>
+                                <option value="">-- Pilih Humidity --</option>
+                                <option value="High">High</option>
+                                <option value="Normal">Normal</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label for="windy" class="form-label"><strong>Windy</strong></label>
+                            <select class="form-select" id="windy" name="windy" required>
+                                <option value="">-- Pilih Windy --</option>
+                                <option value="True">True</option>
+                                <option value="False">False</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="text-center mt-3">
+                        <button type="submit" class="btn btn-primary btn-lg px-5">
+                            <i class="bi bi-cpu"></i> Prediksi
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Prediction Result -->
+                {% if prediction %}
+                <div class="mt-4 p-4 rounded shadow-sm" 
+                     style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <h4 class="text-white mb-3">Hasil Prediksi</h4>
+                    <div class="row text-white">
+                        <div class="col-md-6">
+                            <p><strong>Outlook:</strong> {{ prediction.outlook }}</p>
+                            <p><strong>Temperature:</strong> {{ prediction.temperature }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Humidity:</strong> {{ prediction.humidity }}</p>
+                            <p><strong>Windy:</strong> {{ prediction.windy }}</p>
+                        </div>
+                    </div>
+                    <div class="text-center mt-3">
+                        <h3 class="text-white">
+                            Play Golf: 
+                            <span class="badge {% if prediction.result == 'Yes' %}bg-success{% else %}bg-danger{% endif %} fs-4">
+                                {{ prediction.result }}
+                            </span>
+                        </h3>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Explanation Section -->
+        <div class="card mt-4 shadow border-0">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Tentang Decision Tree ID3</h5>
+            </div>
+            <div class="card-body">
+                <h6 class="fw-bold">Algoritma ID3 (Iterative Dichotomiser 3)</h6>
+                <p>ID3 adalah algoritma supervised learning yang digunakan untuk membangun decision tree dengan cara:</p>
+                <ol>
+                    <li><strong>Menghitung Entropy:</strong> Mengukur ketidakpastian atau keacakan dalam dataset</li>
+                    <li><strong>Menghitung Information Gain:</strong> Mengukur seberapa banyak informasi yang diberikan oleh suatu atribut</li>
+                    <li><strong>Memilih Root Node:</strong> Atribut dengan Information Gain tertinggi dipilih sebagai root node</li>
+                    <li><strong>Splitting:</strong> Dataset dibagi berdasarkan nilai atribut yang dipilih</li>
+                    <li><strong>Rekursi:</strong> Proses diulang untuk setiap subset hingga semua data terklasifikasi</li>
+                </ol>
+
+                <h6 class="fw-bold mt-3">Rumus-rumus Penting:</h6>
+                <ul>
+                    <li><strong>Entropy:</strong> E(S) = -Σ p<sub>i</sub> log<sub>2</sub>(p<sub>i</sub>)</li>
+                    <li><strong>Information Gain:</strong> IG(S, A) = E(S) - Σ (|S<sub>v</sub>| / |S|) × E(S<sub>v</sub>)</li>
+                </ul>
+            </div>
+        </div>
+
+    </div>
+</section>
+{% endblock %}

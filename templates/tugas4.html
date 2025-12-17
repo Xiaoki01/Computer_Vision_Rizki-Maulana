@@ -1,0 +1,325 @@
+{% extends "base.html" %}
+
+{% block title %}Tugas 4 - Naive Bayes{% endblock %}
+
+{% block content %}
+<section class="content-section mt-5">
+    <div class="container">
+        <h1 class="text-center section-title">Naive Bayes - Prediksi Kelayakan Kredit</h1>
+        <p class="text-center text-muted mb-5">Implementasi algoritma Naive Bayes untuk memprediksi kelayakan pemberian kredit berdasarkan usia, pendapatan, dan kepemilikan rumah</p>
+
+        <!-- Dataset Section -->
+        <div class="card mb-4 shadow border-0">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0"><i class="bi bi-table"></i> Dataset Kelayakan Kredit</h4>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    {{ dataset|safe }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Prior Probabilities & Model Accuracy -->
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <div class="card shadow border-0 h-100">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">Probabilitas Prior</h5>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Kelas</th>
+                                    <th class="text-end">Probabilitas</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for kelas, prob in priors.items() %}
+                                <tr>
+                                    <td><strong>Layak Kredit = {{ kelas }}</strong></td>
+                                    <td class="text-end">
+                                        <span class="badge {% if kelas == 'Ya' %}bg-success{% else %}bg-danger{% endif %}">
+                                            {{ "%.4f"|format(prob) }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        <p class="text-muted mt-3 mb-0 small">
+                            Prior probability dihitung dari distribusi kelas target pada dataset training
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="card shadow border-0 h-100">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">Akurasi Model</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="text-center">
+                            <h2 class="display-4 text-info">{{ "%.2f"|format(accuracy) }}%</h2>
+                            <p class="text-muted">Akurasi model pada training data menggunakan scikit-learn</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Likelihood Tables -->
+        <div class="card mb-4 shadow border-0">
+            <div class="card-header bg-warning text-dark">
+                <h4 class="mb-0">Tabel Likelihood P(Feature|Class)</h4>
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-4">Likelihood menunjukkan probabilitas munculnya nilai fitur tertentu untuk setiap kelas target</p>
+                
+                <div class="row">
+                    {% for feature, values in likelihoods.items() %}
+                    <div class="col-md-4 mb-3">
+                        <h6 class="fw-bold text-primary">{{ feature }}</h6>
+                        <table class="table table-sm table-bordered">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Nilai</th>
+                                    <th class="text-center">Ya</th>
+                                    <th class="text-center">Tidak</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for val, probs in values.items() %}
+                                <tr>
+                                    <td><strong>{{ val }}</strong></td>
+                                    <td class="text-center">{{ "%.3f"|format(probs.get('Ya', 0)) }}</td>
+                                    <td class="text-center">{{ "%.3f"|format(probs.get('Tidak', 0)) }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Prediction Form -->
+        <div class="card shadow border-0 mb-4">
+            <div class="card-header bg-dark text-white">
+                <h4 class="mb-0">Prediksi Kelayakan Kredit</h4>
+            </div>
+            <div class="card-body">
+                <p class="text-muted mb-4">Masukkan data calon peminjam untuk memprediksi kelayakan kredit:</p>
+
+                <form method="POST">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="usia" class="form-label"><strong>Usia</strong></label>
+                            <select class="form-select" id="usia" name="usia" required>
+                                <option value="">-- Pilih Kategori Usia --</option>
+                                <option value="Muda">Muda (< 30 tahun)</option>
+                                <option value="Tengah">Tengah (30-50 tahun)</option>
+                                <option value="Tua">Tua (> 50 tahun)</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label for="pendapatan" class="form-label"><strong>Pendapatan</strong></label>
+                            <select class="form-select" id="pendapatan" name="pendapatan" required>
+                                <option value="">-- Pilih Kategori Pendapatan --</option>
+                                <option value="Rendah">Rendah (< 5 juta/bulan)</option>
+                                <option value="Sedang">Sedang (5-10 juta/bulan)</option>
+                                <option value="Tinggi">Tinggi (> 10 juta/bulan)</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label for="punya_rumah" class="form-label"><strong>Kepemilikan Rumah</strong></label>
+                            <select class="form-select" id="punya_rumah" name="punya_rumah" required>
+                                <option value="">-- Pilih Status --</option>
+                                <option value="Ya">Ya (Punya Rumah)</option>
+                                <option value="Tidak">Tidak (Belum Punya)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="text-center mt-3">
+                        <button type="submit" class="btn btn-primary btn-lg px-5">
+                            <i class="bi bi-cpu"></i> Prediksi Kelayakan
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Prediction Result -->
+                {% if prediction %}
+                <div class="mt-5">
+                    <!-- Input Data -->
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-secondary text-white">
+                            <h5 class="mb-0">Data Input</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <p class="mb-2"><strong>Usia:</strong> {{ prediction.usia }}</p>
+                                </div>
+                                <div class="col-md-4">
+                                    <p class="mb-2"><strong>Pendapatan:</strong> {{ prediction.pendapatan }}</p>
+                                </div>
+                                <div class="col-md-4">
+                                    <p class="mb-2"><strong>Punya Rumah:</strong> {{ prediction.punya_rumah }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Calculation Steps -->
+                    {% if calculation_steps %}
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="mb-0">Langkah Perhitungan Manual</h5>
+                        </div>
+                        <div class="card-body">
+                            <h6 class="fw-bold">1. Prior Probability:</h6>
+                            <ul class="mb-3">
+                                {% for kelas, prob in calculation_steps.priors.items() %}
+                                <li>P(Layak = {{ kelas }}) = {{ "%.4f"|format(prob) }}</li>
+                                {% endfor %}
+                            </ul>
+
+                            <h6 class="fw-bold">2. Likelihood:</h6>
+                            <ul class="mb-3">
+                                {% for feature, probs in calculation_steps.likelihoods.items() %}
+                                    {% for kelas, prob in probs.items() %}
+                                    <li>P({{ feature }}|Layak = {{ kelas }}) = {{ "%.4f"|format(prob) }}</li>
+                                    {% endfor %}
+                                {% endfor %}
+                            </ul>
+
+                            <h6 class="fw-bold">3. Posterior Probability:</h6>
+                            <p class="text-muted small mb-2">Menggunakan rumus: P(Class|Features) ∝ P(Class) × ∏P(Feature|Class)</p>
+                            <ul>
+                                {% for kelas, prob in calculation_steps.posteriors.items() %}
+                                <li class="fw-bold">P(Layak = {{ kelas }}|Data) = {{ "%.6f"|format(prob) }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Probability Visualization -->
+                    {% if probability_chart %}
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header bg-primary text-white">
+                            <h5 class="mb-0">Visualisasi Probabilitas</h5>
+                        </div>
+                        <div class="card-body text-center">
+                            <img src="data:image/png;base64,{{ probability_chart }}" 
+                                 class="img-fluid rounded shadow-sm" 
+                                 alt="Probability Chart">
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Final Result -->
+                    <div class="card shadow-sm border-0">
+                        <div class="card-body p-4" 
+                             style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                            <h4 class="text-white mb-4 text-center">Hasil Prediksi</h4>
+                            
+                            <div class="row text-white">
+                                <div class="col-md-6 mb-3">
+                                    <div class="card bg-dark bg-opacity-50 border-0">
+                                        <div class="card-body">
+                                            <h6 class="mb-2">Prediksi Manual (Implementasi ID3):</h6>
+                                            <h3 class="mb-2">
+                                                <span class="badge {% if prediction.manual_prediction == 'Ya' %}bg-success{% else %}bg-danger{% endif %} fs-4">
+                                                    {{ prediction.manual_prediction }}
+                                                </span>
+                                            </h3>
+                                            <small>
+                                                Ya: {{ "%.4f"|format(prediction.manual_posteriors.get('Ya', 0)) }} | 
+                                                Tidak: {{ "%.4f"|format(prediction.manual_posteriors.get('Tidak', 0)) }}
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6 mb-3">
+                                    <div class="card bg-dark bg-opacity-50 border-0">
+                                        <div class="card-body">
+                                            <h6 class="mb-2">Prediksi Scikit-learn:</h6>
+                                            <h3 class="mb-2">
+                                                <span class="badge {% if prediction.sklearn_prediction == 'Ya' %}bg-success{% else %}bg-danger{% endif %} fs-4">
+                                                    {{ prediction.sklearn_prediction }}
+                                                </span>
+                                            </h3>
+                                            <small>
+                                                Ya: {{ "%.4f"|format(prediction.sklearn_posteriors.get('Ya', 0)) }} | 
+                                                Tidak: {{ "%.4f"|format(prediction.sklearn_posteriors.get('Tidak', 0)) }}
+                                            </small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="text-center mt-3">
+                                <p class="text-white mb-0">
+                                    <i class="bi bi-info-circle"></i> 
+                                    {% if prediction.manual_prediction == 'Ya' %}
+                                    Peminjam <strong>LAYAK</strong> mendapatkan kredit berdasarkan profil yang diberikan
+                                    {% else %}
+                                    Peminjam <strong>TIDAK LAYAK</strong> mendapatkan kredit berdasarkan profil yang diberikan
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Explanation Section -->
+        <div class="card shadow border-0">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Tentang Naive Bayes</h5>
+            </div>
+            <div class="card-body">
+                <h6 class="fw-bold">Algoritma Naive Bayes</h6>
+                <p>Naive Bayes adalah algoritma klasifikasi probabilistik berbasis Teorema Bayes dengan asumsi independensi antar fitur. Algoritma ini sangat efisien dan efektif untuk berbagai masalah klasifikasi.</p>
+
+                <h6 class="fw-bold mt-3">Cara Kerja:</h6>
+                <ol>
+                    <li><strong>Hitung Prior Probability:</strong> Probabilitas setiap kelas target P(C) dari distribusi data training</li>
+                    <li><strong>Hitung Likelihood:</strong> Probabilitas kemunculan setiap nilai fitur untuk tiap kelas P(F|C)</li>
+                    <li><strong>Hitung Posterior Probability:</strong> Gunakan Teorema Bayes untuk menghitung P(C|F)</li>
+                    <li><strong>Prediksi:</strong> Pilih kelas dengan posterior probability tertinggi</li>
+                </ol>
+
+                <h6 class="fw-bold mt-3">Teorema Bayes:</h6>
+                <div class="bg-light p-3 rounded border">
+                    <p class="mb-2 text-center"><strong>P(C|F) = [P(F|C) × P(C)] / P(F)</strong></p>
+                    <p class="mb-2 text-center"><strong>P(C|F₁,F₂,...,Fₙ) ∝ P(C) × P(F₁|C) × P(F₂|C) × ... × P(Fₙ|C)</strong></p>
+                </div>
+
+                <h6 class="fw-bold mt-3">Kelebihan Naive Bayes:</h6>
+                <ul>
+                    <li>Sederhana dan mudah diimplementasikan</li>
+                    <li>Cepat dalam training dan prediksi</li>
+                    <li>Efektif untuk data berdimensi tinggi</li>
+                    <li>Bekerja baik dengan dataset kecil</li>
+                    <li>Tidak sensitif terhadap data yang tidak relevan</li>
+                </ul>
+
+                <h6 class="fw-bold mt-3">Penerapan dalam Prediksi Kredit:</h6>
+                <p>Model ini menggunakan fitur <strong>Usia</strong>, <strong>Pendapatan</strong>, dan <strong>Kepemilikan Rumah</strong> untuk memprediksi kelayakan kredit. Dengan asumsi independensi, setiap fitur berkontribusi secara terpisah terhadap keputusan akhir, meskipun dalam praktiknya fitur-fitur tersebut mungkin saling berkorelasi.</p>
+            </div>
+        </div>
+
+    </div>
+</section>
+{% endblock %}
